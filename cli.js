@@ -1,5 +1,6 @@
 import { PackageTrackingSystem } from './package-tracker.js';
 import readline from 'readline/promises';  // Using the promises version of readline
+import { Package } from '../models/Package.js';
 
 /**
  * Command Line Interface for the Package Tracking System.
@@ -89,7 +90,11 @@ export class PackageTrackerCLI {
                     console.log(this.trackingSystem.searchPackages(searchQuery));
                     break;
                 case '4':
-                    const status = await rl.question('Enter status (Delivered/In Transit/Arriving Soon): ');
+                    console.log('\nAvailable status types:');
+                    Object.values(Package.STATUS_TYPES).forEach(status => 
+                        console.log(`- ${status}`)
+                    );
+                    const status = await rl.question('Enter status: ');
                     console.log(this.trackingSystem.filterByStatus(status));
                     break;
                 case '5':
@@ -114,6 +119,4 @@ export class PackageTrackerCLI {
 
 // Start the CLI
 const cli = new PackageTrackerCLI();
-// cli.start();
-
-export { PackageTrackerCLI }; 
+// cli.start(); 

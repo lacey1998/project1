@@ -8,6 +8,16 @@ import StatusUpdate from './StatusUpdate.js';
  * @class
  */
 class Package {
+    // Define status types as static constants
+    static STATUS_TYPES = {
+        IN_TRANSIT: 'In Transit',
+        DELIVERED: 'Delivered',
+        OUT_FOR_DELIVERY: 'Out for Delivery',
+        ARRIVING_SOON: 'Arriving Soon',
+        DELAYED: 'Delayed',
+        EXCEPTION: 'Exception'
+    };
+
     /**
      * Creates a new Package instance.
      * @param {Object} data - Package initialization data
@@ -22,7 +32,8 @@ class Package {
         this.carrier = data.carrier;
         this.sender = data.sender;
         this.description = data.description;
-        this.status = 'In Transit';
+        // Default status is IN_TRANSIT
+        this.status = Package.STATUS_TYPES.IN_TRANSIT;
         this.estimatedDeliveryDate = new Date(data.estimatedDeliveryDate);
         this.tags = [];
         this.trackingLink = data.carrier.generateTrackingLink(data.trackingNumber);
@@ -50,9 +61,13 @@ class Package {
 
     /**
      * Updates the package status and records it in history.
-     * @param {string} newStatus - The new status
+     * @param {string} newStatus - Must be one of Package.STATUS_TYPES
+     * @throws {Error} If invalid status type
      */
     updateStatus(newStatus) {
+        if (!Object.values(Package.STATUS_TYPES).includes(newStatus)) {
+            throw new Error(`Invalid status. Must be one of: ${Object.values(Package.STATUS_TYPES).join(', ')}`);
+        }
         this.status = newStatus;
         this.history.addEntry(new StatusUpdate(newStatus, new Date()));
     }
