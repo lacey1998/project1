@@ -1,9 +1,16 @@
-import { DHLInternational, ChemicalLogistics } from './models/Carrier.js';
+import { DHLInternational, HazmatCarrier } from './models/Carrier.js';
 import Package from './models/Package.js';
 import EmailParser from './services/EmailParser.js';
 import UserManager from './services/UserManager.js';
 
+/**
+ * Main system for managing package tracking functionality.
+ * @class
+ */
 class PackageTrackingSystem {
+    /**
+     * Creates a new PackageTrackingSystem instance.
+     */
     constructor() {
         this.packages = []; // Aggregation with Package objects
         this.subscribers = []; // Observer pattern implementation
@@ -12,33 +19,68 @@ class PackageTrackingSystem {
         this.userManager = new UserManager(); // Composition with UserManager
     }
 
+    /**
+     * Initializes supported carriers.
+     * @returns {Object.<string, Carrier>} Map of carrier names to carrier instances
+     * @private
+     */
     initializeCarriers() {
         return {
             'DHL': new DHLInternational(),
-            'CHEMLOG': new ChemicalLogistics()
+            'CHEMLOG': new HazmatCarrier()
         };
     }
 
+    /**
+     * Registers a new user in the system.
+     * @param {Object} userDetails - User registration details
+     * @returns {User} The newly created user
+     */
     registerUser(userDetails) {
         return this.userManager.registerUser(userDetails);
     }
 
+    /**
+     * Logs in a user and creates a session.
+     * @param {string} username - Username
+     * @param {string} password - Password
+     * @returns {string} Session ID
+     */
     login(username, password) {
         return this.userManager.login(username, password);
     }
 
+    /**
+     * Logs out a user from the system.
+     * @param {string} sessionId - The session ID to invalidate
+     */
     logout(sessionId) {
         this.userManager.logout(sessionId);
     }
 
+    /**
+     * Subscribes to package tracking events.
+     * @param {Function} callback - Event handler function
+     */
     subscribe(callback) {
         this.subscribers.push(callback);
     }
 
+    /**
+     * Notifies all subscribers of an event.
+     * @param {string} event - The event type
+     * @param {*} data - The event data
+     * @private
+     */
     notifySubscribers(event, data) {
         this.subscribers.forEach(callback => callback(event, data));
     }
 
+    /**
+     * Checks if a package is due for delivery tomorrow.
+     * @param {Package} pkg - The package to check
+     * @private
+     */
     checkDeliveryDate(pkg) {
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
@@ -49,6 +91,12 @@ class PackageTrackingSystem {
         }
     }
 
+    /**
+     * Extracts package information from email content.
+     * @param {string} emailContent - Email content to parse
+     * @param {string} sessionId - User session ID
+     * @returns {Package|null} Created package or null if parsing fails
+     */
     extractFromEmail(emailContent, sessionId) {
         const user = this.userManager.getUser(sessionId);
         if (!user) {
@@ -66,6 +114,12 @@ class PackageTrackingSystem {
         return null;
     }
 
+    /**
+     * Gets all packages sorted by delivery date.
+     * @param {string} sessionId - User session ID
+     * @returns {Package[]} Sorted array of packages
+     * @throws {Error} If user is not logged in
+     */
     getPackagesSorted(sessionId) {
         const user = this.userManager.getUser(sessionId);
         if (!user) {
@@ -76,6 +130,13 @@ class PackageTrackingSystem {
         );
     }
 
+    /**
+     * Filters packages by status.
+     * @param {string} status - Status to filter by
+     * @param {string} sessionId - User session ID
+     * @returns {Package[]} Filtered array of packages
+     * @throws {Error} If user is not logged in
+     */
     filterByStatus(status, sessionId) {
         const user = this.userManager.getUser(sessionId);
         if (!user) {
@@ -84,6 +145,13 @@ class PackageTrackingSystem {
         return user.getPackages().filter(pkg => pkg.status === status);
     }
 
+    /**
+     * Searches packages by query string.
+     * @param {string} query - Search query
+     * @param {string} sessionId - User session ID
+     * @returns {Package[]} Array of matching packages
+     * @throws {Error} If user is not logged in
+     */
     searchPackages(query, sessionId) {
         const user = this.userManager.getUser(sessionId);
         if (!user) {
@@ -97,6 +165,12 @@ class PackageTrackingSystem {
         );
     }
 
+    /**
+     * Gets packages scheduled for delivery tomorrow.
+     * @param {string} sessionId - User session ID
+     * @returns {Package[]} Array of packages due tomorrow
+     * @throws {Error} If user is not logged in
+     */
     checkUpcomingDeliveries(sessionId) {
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
@@ -108,6 +182,13 @@ class PackageTrackingSystem {
         });
     }
 
+    /**
+     * Updates the status of a package.
+     * @param {string} trackingNumber - Package tracking number
+     * @param {string} newStatus - New status to set
+     * @param {string} sessionId - User session ID
+     * @throws {Error} If user is not logged in
+     */
     updatePackageStatus(trackingNumber, newStatus, sessionId) {
         const user = this.userManager.getUser(sessionId);
         if (!user) {

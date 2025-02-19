@@ -1,21 +1,43 @@
 import User from '../models/User.js';
 
+/**
+ * Manages user accounts and sessions.
+ * @class
+ */
 class UserManager {
+    /**
+     * Creates a new UserManager instance.
+     */
     constructor() {
         this.users = new Map(); // username -> User
-        this.loggedInUsers = new Map(); // sessionId -> User
+        this.sessions = new Map();
     }
 
-    registerUser({ username, email, password }) {
-        if (this.users.has(username)) {
+    /**
+     * Registers a new user.
+     * @param {Object} details - User registration details
+     * @param {string} details.username - Username
+     * @param {string} details.email - Email address
+     * @param {string} details.password - Password
+     * @returns {User} The newly created user
+     */
+    registerUser(details) {
+        if (this.users.has(details.username)) {
             throw new Error('Username already exists');
         }
 
-        const user = new User({ username, email, password });
-        this.users.set(username, user);
+        const user = new User({ username: details.username, email: details.email, password: details.password });
+        this.users.set(details.username, user);
         return user;
     }
 
+    /**
+     * Logs in a user.
+     * @param {string} username - Username
+     * @param {string} password - Password
+     * @returns {string} Session ID
+     * @throws {Error} If login fails
+     */
     login(username, password) {
         const user = this.users.get(username);
         if (!user || !user.validatePassword(password)) {
@@ -23,16 +45,16 @@ class UserManager {
         }
 
         const sessionId = this.generateSessionId();
-        this.loggedInUsers.set(sessionId, user);
+        this.sessions.set(sessionId, user);
         return sessionId;
     }
 
     logout(sessionId) {
-        this.loggedInUsers.delete(sessionId);
+        this.sessions.delete(sessionId);
     }
 
     getUser(sessionId) {
-        return this.loggedInUsers.get(sessionId);
+        return this.sessions.get(sessionId);
     }
 
     generateSessionId() {
