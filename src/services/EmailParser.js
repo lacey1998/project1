@@ -1,21 +1,27 @@
 class EmailParser {
     constructor(carriers) {
-        this.carriers = carriers; // Association with Carrier objects
+        this.carriers = carriers;
     }
 
     parse(emailContent) {
-        console.log('Parsing email content:', emailContent); // Debugging log
+        console.log('Parsing email content:', emailContent);
 
         try {
             const trackingInfo = this.findTrackingInfo(emailContent);
             if (!trackingInfo) {
-                console.log('No tracking info found'); // Debugging log
+                console.log('No tracking info found');
+                return null;
+            }
+
+            const carrierInstance = this.carriers[trackingInfo.carrier];
+            if (!carrierInstance) {
+                console.log('Carrier not found:', trackingInfo.carrier);
                 return null;
             }
 
             return {
                 trackingNumber: trackingInfo.trackingNumber,
-                carrier: trackingInfo.carrier,
+                carrier: carrierInstance,  // Pass the carrier instance, not just the name
                 sender: this.extractSender(emailContent),
                 description: this.extractDescription(emailContent),
                 estimatedDeliveryDate: this.extractDeliveryDate(emailContent)
@@ -27,29 +33,45 @@ class EmailParser {
     }
 
     findTrackingInfo(content) {
-        for (const [carrierName, carrier] of Object.entries(this.carriers)) {
-            const match = content.match(carrier.trackingPattern);
-            if (match) {
-                return {
-                    trackingNumber: match[0],
-                    carrier: carrierName
-                };
-            }
+        const carrierMatch = content.match(/Carrier: (\w+)/);
+        if (!carrierMatch) {
+            console.log('No carrier found in email');
+            return null;
         }
-        return null;
+
+        const carrierName = carrierMatch[1].toUpperCase();
+        const carrier = this.carriers[carrierName];
+        
+        if (!carrier) {
+            console.log(`Carrier ${carrierName} not found in registered carriers`);
+            return null;
+        }
+
+        const match = content.match(carrier.trackingPattern);
+        if (!match) {
+            console.log(`No valid tracking number found for carrier ${carrierName}`);
+            return null;
+        }
+
+        return {
+            trackingNumber: match[0],
+            carrier: carrierName
+        };
     }
 
     extractSender(content) {
-        return 'Example Sender';
+        const match = content.match(/From: (.+)/);
+        return match ? match[1].trim() : 'Unknown Sender';
     }
 
     extractDescription(content) {
-        return 'Package description';
+        const match = content.match(/order of "([^"]+)"/);
+        return match ? match[1] : 'Package';
     }
 
     extractDeliveryDate(content) {
         const match = content.match(/Expected Delivery: (\d{4}-\d{2}-\d{2})/);
-        return match ? new Date(match[1]) : null;
+        return match ? match[1] : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     }
 }
 

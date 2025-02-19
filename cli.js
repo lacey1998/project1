@@ -1,4 +1,5 @@
-const { PackageTrackingSystem } = require('./package-tracker');
+import { PackageTrackingSystem } from './package-tracker.js';
+import readline from 'readline/promises';  // Using the promises version of readline
 
 class PackageTrackerCLI {
     constructor() {
@@ -6,8 +7,8 @@ class PackageTrackerCLI {
         this.setupNotifications();
     }
 
-    setupNotifications() {
-        this.trackingSystem.subscribe((event, data) => {
+    static getNotificationHandler() {
+        return (event, data) => {
             switch (event) {
                 case 'NEW_PACKAGE':
                     console.log(`New package added: ${data.trackingNumber}`);
@@ -15,8 +16,15 @@ class PackageTrackerCLI {
                 case 'STATUS_UPDATE':
                     console.log(`Package ${data.trackingNumber} status updated to: ${data.status}`);
                     break;
+                case 'DELIVERY_TOMORROW':
+                    console.log(`🚚 DELIVERY ALERT: Package ${data.trackingNumber} will be delivered tomorrow!`);
+                    break;
             }
-        });
+        };
+    }
+
+    setupNotifications() {
+        this.trackingSystem.subscribe(PackageTrackerCLI.getNotificationHandler());
     }
 
     // Example email content for testing
@@ -32,9 +40,9 @@ class PackageTrackerCLI {
             Your recent order of "Wireless Headphones" has shipped.
         `;
 
-        const package = this.trackingSystem.extractFromEmail(emailContent);
-        if (package) {
-            console.log('Package extracted successfully:', package);
+        const pkg = this.trackingSystem.extractFromEmail(emailContent);
+        if (pkg) {
+            console.log('Package extracted successfully:', pkg);
         }
     }
 
@@ -51,16 +59,14 @@ class PackageTrackerCLI {
     }
 
     async start() {
-        const readline = require('readline').createInterface({
+        const rl = readline.createInterface({
             input: process.stdin,
             output: process.stdout
         });
 
-        const question = (query) => new Promise((resolve) => readline.question(query, resolve));
-
         while (true) {
             this.showMenu();
-            const choice = await question('Enter your choice (1-6): ');
+            const choice = await rl.question('Enter your choice (1-6): ');
 
             switch (choice) {
                 case '1':
@@ -71,16 +77,16 @@ class PackageTrackerCLI {
                     console.log(this.trackingSystem.getPackagesSorted());
                     break;
                 case '3':
-                    const searchQuery = await question('Enter search term: ');
+                    const searchQuery = await rl.question('Enter search term: ');
                     console.log(this.trackingSystem.searchPackages(searchQuery));
                     break;
                 case '4':
-                    const status = await question('Enter status (Delivered/In Transit/Arriving Soon): ');
+                    const status = await rl.question('Enter status (Delivered/In Transit/Arriving Soon): ');
                     console.log(this.trackingSystem.filterByStatus(status));
                     break;
                 case '5':
-                    const trackingNumber = await question('Enter tracking number: ');
-                    const tag = await question('Enter tag: ');
+                    const trackingNumber = await rl.question('Enter tracking number: ');
+                    const tag = await rl.question('Enter tag: ');
                     const pkg = this.trackingSystem.packages.find(p => p.trackingNumber === trackingNumber);
                     if (pkg) {
                         pkg.addTag(tag);
@@ -89,7 +95,7 @@ class PackageTrackerCLI {
                     break;
                 case '6':
                     console.log('Goodbye!');
-                    readline.close();
+                    rl.close();
                     return;
                 default:
                     console.log('Invalid choice. Please try again.');
@@ -100,4 +106,6 @@ class PackageTrackerCLI {
 
 // Start the CLI
 const cli = new PackageTrackerCLI();
-cli.start(); 
+// cli.start();
+
+export { PackageTrackerCLI }; 
