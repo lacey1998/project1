@@ -1,27 +1,22 @@
 import PackageTrackingSystem from './PackageTrackingSystem.js';
-import { DHLInternational, ChemicalLogistics } from './models/Carrier.js';
+import { DHLInternational, HazmatCarrier } from './models/Carrier.js';
 import { PackageTrackerCLI } from '../cli.js';
 
 // Initialize the package tracking system
 const trackingSystem = new PackageTrackingSystem();
 
-// 1. User Registration and Login
-console.log('=== Testing Package Tracking System ===\n');
-
+// 1. User Authentication
+console.log('\n1. User Authentication');
 const user = trackingSystem.registerUser({
-    username: 'john_doe',
-    email: 'john@example.com',
+    username: 'lacey',
+    email: 'laceyl@example.com',
     password: 'securepassword'
 });
-console.log('1. User registered:', user.username);
+console.log('User registered:', user.username);
+const sessionId = trackingSystem.login('lacey', 'securepassword');
+console.log('Session ID:', sessionId);
 
-const sessionId = trackingSystem.login('john_doe', 'securepassword');
-console.log('User logged in with session ID:', sessionId);
-
-// Setup notifications for testing using CLI's handler
-console.log('\n=== Testing Notification System ===');
-
-// Setup notification handler from CLI
+// Setup notification handler
 let notificationCount = 0;
 const notificationHandler = (event, data) => {
     notificationCount++;
@@ -30,129 +25,87 @@ const notificationHandler = (event, data) => {
 };
 trackingSystem.subscribe(notificationHandler);
 
-// Test package arriving in a week (should not trigger tomorrow notification)
-const futureDeliveryEmail = `
+// 2. Basic Package Tracking
+console.log('\n2. Basic Package Tracking');
+const regularEmail = `
     From: Amazon.com
     Subject: Your package is on its way
-
-    Tracking Number: FUTURE123
-    Carrier: DHL
-    Expected Delivery: ${new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
-
-    Your order of "Future Item" has shipped.
-`;
-
-console.log('\nTesting notification for future delivery:');
-const futurePackage = trackingSystem.extractFromEmail(futureDeliveryEmail, sessionId);
-
-// Check if package was created successfully
-if (futurePackage) {
-    console.log('Future package created:', futurePackage.trackingNumber);
-} else {
-    console.log('Failed to create future package. Check carrier and tracking number format.');
-}
-
-// Test package arriving tomorrow (should trigger tomorrow notification)
-const tomorrowDeliveryEmail = `
-    From: Amazon.com
-    Subject: Your package is on its way
-
-    Tracking Number: TOMORROW123
+    Tracking Number: DHL9876543X
     Carrier: DHL
     Expected Delivery: ${new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
-
-    Your order of "Express Item" has shipped.
+    Your order of "Wireless Headphones" has shipped.
 `;
+const basicPackage = trackingSystem.extractFromEmail(regularEmail, sessionId);
+console.log('Basic Package Details:');
+console.log(`- Tracking Number: ${basicPackage?.trackingNumber}`);
+console.log(`- Description: ${basicPackage?.description}`);
+console.log(`- Status: ${basicPackage?.status}`);
 
-console.log('\nTesting notification for tomorrow delivery:');
-const tomorrowPackage = trackingSystem.extractFromEmail(tomorrowDeliveryEmail, sessionId);
+// 3. Package Organization
+console.log('\n3. Package Organization');
+// Add tags
+basicPackage.addTag('Electronics');
+basicPackage.addTag('Gift');
+console.log('Tags added:', basicPackage.tags);
 
-// Test status update notification only if package was created
-if (tomorrowPackage) {
-    console.log('\nTesting status update notification:');
-    trackingSystem.updatePackageStatus(tomorrowPackage.trackingNumber, 'Out for Delivery', sessionId);
-} else {
-    console.log('Failed to create tomorrow package. Check carrier and tracking number format.');
-}
+// 4. Status Updates
+console.log('\n4. Status Updates');
+trackingSystem.updatePackageStatus(basicPackage.trackingNumber, 'Delivered', sessionId);
+console.log('Package status:', basicPackage.status);
 
-// Verify notifications were triggered
-console.log(`\nTotal notifications received: ${notificationCount}`);
-
-// 2. Email Parsing and Package Creation
-const emailContent = `
-    From: Amazon.com
-    Subject: Your package is on its way
-
-    Tracking Number: 1234567890
-    Carrier: DHL
-    Expected Delivery: ${new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
-
-    Your recent order of "Wireless Headphones" has shipped.
-`;
-
-// 3. Extract package from email
-const newPackage = trackingSystem.extractFromEmail(emailContent, sessionId);
-console.log('\n2. New package created:', newPackage?.trackingNumber);
-
-// 4. Add more packages with different statuses
-const emailContent2 = `
-    From: Best Buy
-    Subject: Order Shipped
-
-    Tracking Number: HZ12345678
-    Carrier: CHEMLOG
-    Expected Delivery: ${new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString().split('T')[0]}
-
-    Your order of "Gaming Console" has shipped.
-`;
-
-const newPackage2 = trackingSystem.extractFromEmail(emailContent2, sessionId);
-
-// 5. Test package tagging
-if (newPackage) {
-    newPackage.addTag('Electronics');
-    newPackage.addTag('Gift');
-    console.log('\n3. Added tags to package:', newPackage.tags);
-}
-
-// 6. View package contents
-if (newPackage) {
-    console.log('\n4. Package contents:', newPackage.getContents());
-}
-
-// 7. Test package sorting
-const sortedPackages = trackingSystem.getPackagesSorted(sessionId);
-console.log('\n5. Sorted packages:', 
-    sortedPackages.map(p => `${p.trackingNumber} (${p.estimatedDeliveryDate})`));
-
-// 8. Test status filtering
-trackingSystem.updatePackageStatus(newPackage?.trackingNumber, 'Delivered', sessionId);
-const deliveredPackages = trackingSystem.filterByStatus('Delivered', sessionId);
-console.log('\n6. Delivered packages:', 
-    deliveredPackages.map(p => p.trackingNumber));
-
-// 9. Test package search
+// 5. Search and Filter
+console.log('\n5. Search and Filter');
 const searchResults = trackingSystem.searchPackages('Electronics', sessionId);
-console.log('\n7. Search results for "Electronics":', 
+console.log('Search results for "Electronics":', 
     searchResults.map(p => p.trackingNumber));
 
-// 10. Check upcoming deliveries
-const upcomingDeliveries = trackingSystem.checkUpcomingDeliveries(sessionId);
-console.log('\n8. Packages arriving tomorrow:', 
-    upcomingDeliveries.map(p => p.trackingNumber));
+const deliveredPackages = trackingSystem.filterByStatus('Delivered', sessionId);
+console.log('Delivered packages:', 
+    deliveredPackages.map(p => p.trackingNumber));
 
-// Test carrier-specific features
-const dhl = new DHLInternational();
-const chemLog = new ChemicalLogistics();
+// 6. Specialized Carriers
+console.log('\n6. Specialized Carriers');
 
-console.log('\n9. Testing carrier features:');
-console.log('DHL International:');
-console.log(`- Shipping to UK allowed: ${dhl.validateDestination('UK')}`);
-console.log(`- Customs clearance time for CN: ${dhl.getEstimatedCustomsClearance('CN')} hours`);
+// International Shipping (DHL)
+const internationalEmail = `
+    From: UK_Seller@etsy.com
+    Subject: Your order from UK has shipped
+    Tracking Number: DHL7654321X
+    Carrier: DHL
+    Origin Country: UK
+    Destination Country: US
+    Expected Delivery: ${new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+    Your order of "British Tea Set" has shipped.
+`;
 
-console.log('\nChemical Logistics:');
-console.log(`- Can ship flammable materials: ${chemLog.validateHazmatShipment('flammable')}`);
-console.log(`- Emergency contact: ${chemLog.getEmergencyContact()}`);
+const dhlPackage = trackingSystem.extractFromEmail(internationalEmail, sessionId);
+if (dhlPackage?.carrier instanceof DHLInternational) {
+    console.log('\nDHL International Package:');
+    console.log(`- Tracking Number: ${dhlPackage.trackingNumber}`);
+    console.log(`- Status: ${dhlPackage.status}`);
+    console.log(`- International Zones: ${dhlPackage.carrier.getInternationalShippingZones()}`);
+    console.log(`- Valid for International: ${dhlPackage.carrier.validateInternationalTracking(dhlPackage.trackingNumber)}`);
+}
+
+// Hazardous Materials (CHEMLOG)
+const hazmatEmail = `
+    From: Laboratory_Supplies@chemlab.com
+    Subject: Chemical shipment
+    Tracking Number: HZ98765432
+    Carrier: CHEMLOG
+    Material Type: flammable
+    Expected Delivery: ${new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+    Your order of "Laboratory Chemicals (Flammable)" has shipped.
+`;
+
+const hazmatPackage = trackingSystem.extractFromEmail(hazmatEmail, sessionId);
+if (hazmatPackage?.carrier instanceof HazmatCarrier) {
+    console.log('\nHazmat Package:');
+    console.log(`- Tracking Number: ${hazmatPackage.trackingNumber}`);
+    console.log(`- Status: ${hazmatPackage.status}`);
+    console.log(`- Valid Hazmat Class: ${hazmatPackage.carrier.validateHazmatClass('flammable')}`);
+    console.log(`- Handling Instructions: ${hazmatPackage.carrier.getHandlingInstructions('flammable')}`);
+}
 
 // Cleanup
 trackingSystem.logout(sessionId);

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: src/models/Carrier.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/models/Carrier.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Base class for all carrier types in the package tracking system.
+ * @class
+ */
+class Carrier {
+    /**
+     * Creates a new Carrier instance.
+     * @param {Object} config - The carrier configuration
+     * @param {string} config.name - The name of the carrier
+     * @param {RegExp} config.trackingPattern - Regular expression for validating tracking numbers
+     * @param {string} config.trackingUrlTemplate - Template for generating tracking URLs
+     */
+    constructor(config) {
+        this.name = config.name;
+        this.trackingPattern = config.trackingPattern;
+        this.trackingUrlTemplate = config.trackingUrlTemplate;
+    }
+
+    /**
+     * Generates a tracking URL for a given tracking number.
+     * @param {string} trackingNumber - The package tracking number
+     * @returns {string} The tracking URL
+     */
+    generateTrackingLink(trackingNumber) {
+        return this.trackingUrlTemplate.replace('{trackingNumber}', trackingNumber);
+    }
+
+    /**
+     * Validates a tracking number against the carrier's pattern.
+     * @param {string} trackingNumber - The tracking number to validate
+     * @returns {boolean} True if the tracking number is valid
+     */
+    validateTrackingNumber(trackingNumber) {
+        return this.trackingPattern.test(trackingNumber);
+    }
+}
+
+/**
+ * DHL International carrier implementation.
+ * @extends Carrier
+ */
+class DHLInternational extends Carrier {
+    /**
+     * Creates a new DHLInternational carrier instance.
+     */
+    constructor() {
+        super({
+            name: 'DHL International',
+            trackingPattern: /Tracking Number: (DHL[A-Z0-9]{7}X)\b/,
+            trackingUrlTemplate: 'https://www.dhl.com/track?trackingNumber={trackingNumber}'
+        });
+        this.internationalZones = ['US', 'UK', 'CN', 'JP', 'DE'];
+    }
+
+    /**
+     * Validates if a tracking number is valid for international shipping.
+     * @param {string} trackingNumber - The tracking number to validate
+     * @returns {boolean} True if valid for international shipping
+     */
+    validateInternationalTracking(trackingNumber) {
+        return trackingNumber.startsWith('DHL');
+    }
+
+    /**
+     * Gets the list of supported international shipping zones.
+     * @returns {string[]} Array of supported country codes
+     */
+    getInternationalShippingZones() {
+        return this.internationalZones;
+    }
+}
+
+/**
+ * Hazardous materials carrier implementation.
+ * @extends Carrier
+ */
+class HazmatCarrier extends Carrier {
+    /**
+     * Creates a new HazmatCarrier instance.
+     */
+    constructor() {
+        super({
+            name: 'Chemical Logistics',
+            trackingPattern: /\bHZ\d{8}\b/,
+            trackingUrlTemplate: 'https://chemlog.com/track/{trackingNumber}'
+        });
+        this.hazmatClasses = ['flammable', 'corrosive', 'radioactive'];
+        this.safetyProtocols = new Map([
+            ['flammable', 'Keep away from heat sources'],
+            ['corrosive', 'Handle with protective gear'],
+            ['radioactive', 'Special containment required']
+        ]);
+    }
+
+    /**
+     * Validates if a material class is supported.
+     * @param {string} materialClass - The hazmat class to validate
+     * @returns {boolean} True if the material class is supported
+     */
+    validateHazmatClass(materialClass) {
+        return this.hazmatClasses.includes(materialClass);
+    }
+
+    /**
+     * Gets handling instructions for a specific material type.
+     * @param {string} materialType - The type of hazardous material
+     * @returns {string} Safety handling instructions
+     */
+    getHandlingInstructions(materialType) {
+        return this.safetyProtocols.get(materialType) || 'Standard handling procedures apply';
+    }
+}
+
+export { Carrier, DHLInternational, HazmatCarrier }; </code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Address.html">Address</a></li><li><a href="Carrier.html">Carrier</a></li><li><a href="DHLInternational.html">DHLInternational</a></li><li><a href="EmailParser.html">EmailParser</a></li><li><a href="HazmatCarrier.html">HazmatCarrier</a></li><li><a href="Package.html">Package</a></li><li><a href="PackageTrackerCLI.html">PackageTrackerCLI</a></li><li><a href="PackageTrackingSystem.html">PackageTrackingSystem</a></li><li><a href="ShipmentHistory.html">ShipmentHistory</a></li><li><a href="StatusUpdate.html">StatusUpdate</a></li><li><a href="User.html">User</a></li><li><a href="UserManager.html">UserManager</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Wed Feb 19 2025 10:41:13 GMT-0800 (Pacific Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

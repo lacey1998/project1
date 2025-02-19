@@ -1,12 +1,20 @@
 import { PackageTrackingSystem } from './package-tracker.js';
 import readline from 'readline/promises';  // Using the promises version of readline
 
-class PackageTrackerCLI {
+/**
+ * Command Line Interface for the Package Tracking System.
+ * @class
+ */
+export class PackageTrackerCLI {
     constructor() {
         this.trackingSystem = new PackageTrackingSystem();
         this.setupNotifications();
     }
 
+    /**
+     * Gets the notification handler for CLI output.
+     * @returns {Function} Notification handler function
+     */
     static getNotificationHandler() {
         return (event, data) => {
             switch (event) {

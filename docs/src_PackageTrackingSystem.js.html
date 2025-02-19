@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: src/PackageTrackingSystem.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/PackageTrackingSystem.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { DHLInternational, HazmatCarrier } from './models/Carrier.js';
+import Package from './models/Package.js';
+import EmailParser from './services/EmailParser.js';
+import UserManager from './services/UserManager.js';
+
+/**
+ * Main system for managing package tracking functionality.
+ * @class
+ */
+class PackageTrackingSystem {
+    /**
+     * Creates a new PackageTrackingSystem instance.
+     */
+    constructor() {
+        this.packages = []; // Aggregation with Package objects
+        this.subscribers = []; // Observer pattern implementation
+        this.carriers = this.initializeCarriers(); // Composition with Carrier objects
+        this.emailParser = new EmailParser(this.carriers); // Association with EmailParser
+        this.userManager = new UserManager(); // Composition with UserManager
+    }
+
+    /**
+     * Initializes supported carriers.
+     * @returns {Object.&lt;string, Carrier>} Map of carrier names to carrier instances
+     * @private
+     */
+    initializeCarriers() {
+        return {
+            'DHL': new DHLInternational(),
+            'CHEMLOG': new HazmatCarrier()
+        };
+    }
+
+    /**
+     * Registers a new user in the system.
+     * @param {Object} userDetails - User registration details
+     * @returns {User} The newly created user
+     */
+    registerUser(userDetails) {
+        return this.userManager.registerUser(userDetails);
+    }
+
+    /**
+     * Logs in a user and creates a session.
+     * @param {string} username - Username
+     * @param {string} password - Password
+     * @returns {string} Session ID
+     */
+    login(username, password) {
+        return this.userManager.login(username, password);
+    }
+
+    /**
+     * Logs out a user from the system.
+     * @param {string} sessionId - The session ID to invalidate
+     */
+    logout(sessionId) {
+        this.userManager.logout(sessionId);
+    }
+
+    /**
+     * Subscribes to package tracking events.
+     * @param {Function} callback - Event handler function
+     */
+    subscribe(callback) {
+        this.subscribers.push(callback);
+    }
+
+    /**
+     * Notifies all subscribers of an event.
+     * @param {string} event - The event type
+     * @param {*} data - The event data
+     * @private
+     */
+    notifySubscribers(event, data) {
+        this.subscribers.forEach(callback => callback(event, data));
+    }
+
+    /**
+     * Checks if a package is due for delivery tomorrow.
+     * @param {Package} pkg - The package to check
+     * @private
+     */
+    checkDeliveryDate(pkg) {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+        const deliveryDate = new Date(pkg.estimatedDeliveryDate);
+        if (deliveryDate.toDateString() === tomorrow.toDateString()) {
+            this.notifySubscribers('DELIVERY_TOMORROW', pkg);
+        }
+    }
+
+    /**
+     * Extracts package information from email content.
+     * @param {string} emailContent - Email content to parse
+     * @param {string} sessionId - User session ID
+     * @returns {Package|null} Created package or null if parsing fails
+     */
+    extractFromEmail(emailContent, sessionId) {
+        const user = this.userManager.getUser(sessionId);
+        if (!user) {
+            throw new Error('User not logged in');
+        }
+
+        const packageData = this.emailParser.parse(emailContent);
+        if (packageData) {
+            const newPackage = new Package(packageData);
+            user.addPackage(newPackage);
+            this.notifySubscribers('NEW_PACKAGE', newPackage);
+            this.checkDeliveryDate(newPackage);
+            return newPackage;
+        }
+        return null;
+    }
+
+    /**
+     * Gets all packages sorted by delivery date.
+     * @param {string} sessionId - User session ID
+     * @returns {Package[]} Sorted array of packages
+     * @throws {Error} If user is not logged in
+     */
+    getPackagesSorted(sessionId) {
+        const user = this.userManager.getUser(sessionId);
+        if (!user) {
+            throw new Error('User not logged in');
+        }
+        return user.getPackages().sort((a, b) => 
+            a.estimatedDeliveryDate - b.estimatedDeliveryDate
+        );
+    }
+
+    /**
+     * Filters packages by status.
+     * @param {string} status - Status to filter by
+     * @param {string} sessionId - User session ID
+     * @returns {Package[]} Filtered array of packages
+     * @throws {Error} If user is not logged in
+     */
+    filterByStatus(status, sessionId) {
+        const user = this.userManager.getUser(sessionId);
+        if (!user) {
+            throw new Error('User not logged in');
+        }
+        return user.getPackages().filter(pkg => pkg.status === status);
+    }
+
+    /**
+     * Searches packages by query string.
+     * @param {string} query - Search query
+     * @param {string} sessionId - User session ID
+     * @returns {Package[]} Array of matching packages
+     * @throws {Error} If user is not logged in
+     */
+    searchPackages(query, sessionId) {
+        const user = this.userManager.getUser(sessionId);
+        if (!user) {
+            throw new Error('User not logged in');
+        }
+        query = query.toLowerCase();
+        return user.getPackages().filter(pkg => 
+            pkg.trackingNumber.toLowerCase().includes(query) ||
+            pkg.sender.toString().toLowerCase().includes(query) ||
+            pkg.tags.some(tag => tag.toLowerCase().includes(query))
+        );
+    }
+
+    /**
+     * Gets packages scheduled for delivery tomorrow.
+     * @param {string} sessionId - User session ID
+     * @returns {Package[]} Array of packages due tomorrow
+     * @throws {Error} If user is not logged in
+     */
+    checkUpcomingDeliveries(sessionId) {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const packages = this.getPackagesSorted(sessionId);
+        
+        return packages.filter(pkg => {
+            const deliveryDate = new Date(pkg.estimatedDeliveryDate);
+            return deliveryDate.toDateString() === tomorrow.toDateString();
+        });
+    }
+
+    /**
+     * Updates the status of a package.
+     * @param {string} trackingNumber - Package tracking number
+     * @param {string} newStatus - New status to set
+     * @param {string} sessionId - User session ID
+     * @throws {Error} If user is not logged in
+     */
+    updatePackageStatus(trackingNumber, newStatus, sessionId) {
+        const user = this.userManager.getUser(sessionId);
+        if (!user) {
+            throw new Error('User not logged in');
+        }
+        const pkg = user.getPackages().find(p => p.trackingNumber === trackingNumber);
+        if (pkg) {
+            pkg.updateStatus(newStatus);
+            this.notifySubscribers('STATUS_UPDATE', { trackingNumber, status: newStatus });
+        }
+    }
+}
+
+export default PackageTrackingSystem; </code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Address.html">Address</a></li><li><a href="Carrier.html">Carrier</a></li><li><a href="DHLInternational.html">DHLInternational</a></li><li><a href="EmailParser.html">EmailParser</a></li><li><a href="HazmatCarrier.html">HazmatCarrier</a></li><li><a href="Package.html">Package</a></li><li><a href="PackageTrackerCLI.html">PackageTrackerCLI</a></li><li><a href="PackageTrackingSystem.html">PackageTrackingSystem</a></li><li><a href="ShipmentHistory.html">ShipmentHistory</a></li><li><a href="StatusUpdate.html">StatusUpdate</a></li><li><a href="User.html">User</a></li><li><a href="UserManager.html">UserManager</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Wed Feb 19 2025 10:41:13 GMT-0800 (Pacific Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
