@@ -13,24 +13,50 @@ This **Package Tracking System** is designed to extract package details from ema
 - Supports **search and filtering** by tracking number, sender, or category.
 
 ## Project Structure
-This repository contains the **PDF documentation** for the project, including:
-- **Business Requirements**
-- **UML Diagrams**
-- **Class Structure & Attributes**
-- **Implementation Details**
+- `/docs/`: This directory contains **JSDoc-generated documentation** for the project. After running `npm run doc`, JSDoc will generate an HTML documentation site here. Open `docs/index.html` in a browser to view the API documentation.
+- `CS5700 Project 1 Design a Social Network.pdf`: The project specification document outlining the requirements and objectives.
+- `DESIGN_PRINCIPLES.md`: A markdown file demonstrate the application of object oriented programming in my code, such as OOP pillars, SOLID Principles, and design patterns.
+- `/src/`
+- `cli.js`: The command-line interface script that allows users to interact with the package tracking system via terminal commands.
+- `package-tracker.js`: The core module responsible for parsing emails, extracting package information, and managing package statuses.
+- `user.js`: Module defining the `User` class, handling user-specific data and preferences.
+- models & services inlcudes all the classes in this project
+- Root Files
+
 
 ## How to Use
-Since this project is **documented only**, the repository does not include a working implementation. Refer to the uploaded PDFs for:
-1. **Project Design & Architecture**
-2. **OOP Class Definitions**
-3. **System Behavior & Flow**
+1. Please clone the repository
+```bash
+git clone https://github.com/lacey1998/project1
+cd project1
+```
+
+2. Install Dependencies
+
+```bash
+npm install
+```
+
+3. To run the basic example in main.js please run
+
+```bash
+node main.js
+```
+
 
 ## Future Enhancements
 - Integration with **real-time tracking APIs** (FedEx, UPS, DHL).
 - Actual **email parsing implementation**.
 - User interface for better interaction.
 
-## Repository Notes
-- This repository **only contains documentation** (`.pdf` files).  
-- All implementation details are described within the uploaded files.
+## Youtube Video
+- https://youtu.be/qQeD8JyUKIY
+
+## UML Diagram
+- https://lucid.app/lucidchart/f09e9faa-2289-42c8-aac8-a565e59f32de/edit?invitationId=inv_32b86b0b-176c-4a36-99b2-6c56b5d748f3&page=0_0# 
+
+## License
+This project is licensed under the MIT License. See the LICENSE file for details.
+
+
 
