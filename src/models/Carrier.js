@@ -4,16 +4,30 @@
  */
 class Carrier {
     /**
+     * Defines available carrier types.
+     * @static
+     * @readonly
+     */
+    static TYPES = {
+        DHL: 'DHL',
+        UPS: 'UPS',
+        FEDEX: 'FEDEX',
+        CHEMLOG: 'CHEMLOG'
+    };
+
+    /**
      * Creates a new Carrier instance.
      * @param {Object} config - The carrier configuration
      * @param {string} config.name - The name of the carrier
      * @param {RegExp} config.trackingPattern - Regular expression for validating tracking numbers
      * @param {string} config.trackingUrlTemplate - Template for generating tracking URLs
+     * @param {string} config.type - Type of carrier from Carrier.TYPES
      */
     constructor(config) {
         this.name = config.name;
         this.trackingPattern = config.trackingPattern;
         this.trackingUrlTemplate = config.trackingUrlTemplate;
+        this.type = config.type;
     }
 
     /**
@@ -46,6 +60,7 @@ class DHLInternational extends Carrier {
     constructor() {
         super({
             name: 'DHL International',
+            type: Carrier.TYPES.DHL,
             trackingPattern: /Tracking Number: (DHL[A-Z0-9]{7}X)\b/,
             trackingUrlTemplate: 'https://www.dhl.com/track?trackingNumber={trackingNumber}'
         });
@@ -81,6 +96,7 @@ class HazmatCarrier extends Carrier {
     constructor() {
         super({
             name: 'Chemical Logistics',
+            type: Carrier.TYPES.CHEMLOG,
             trackingPattern: /\bHZ\d{8}\b/,
             trackingUrlTemplate: 'https://chemlog.com/track/{trackingNumber}'
         });
@@ -111,4 +127,30 @@ class HazmatCarrier extends Carrier {
     }
 }
 
-export { Carrier, DHLInternational, HazmatCarrier }; 
+/**
+ * Configuration objects for regular carriers.
+ * @type {Object.<string, Object>}
+ */
+const carrierConfigs = {
+    /** @type {Object} UPS carrier configuration */
+    UPS: {
+        name: 'UPS',
+        type: Carrier.TYPES.UPS,
+        trackingPattern: /\b1Z[A-Z0-9]{16}\b/,
+        trackingUrlTemplate: 'https://www.ups.com/track?tracknum={trackingNumber}'
+    },
+    /** @type {Object} FedEx carrier configuration */
+    FEDEX: {
+        name: 'FedEx',
+        type: Carrier.TYPES.FEDEX,
+        trackingPattern: /\b(\d{12}|\d{15})\b/,
+        trackingUrlTemplate: 'https://www.fedex.com/fedextrack/?trknbr={trackingNumber}'
+    }
+};
+
+export { 
+    Carrier, 
+    DHLInternational, 
+    HazmatCarrier,
+    carrierConfigs 
+}; 

@@ -1,6 +1,6 @@
 import { PackageTrackingSystem } from './package-tracker.js';
 import readline from 'readline/promises';  // Using the promises version of readline
-import { Package } from '../models/Package.js';
+import Package from './src/models/Package.js';
 
 /**
  * Command Line Interface for the Package Tracking System.

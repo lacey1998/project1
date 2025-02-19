@@ -1,5 +1,5 @@
 import PackageTrackingSystem from './PackageTrackingSystem.js';
-import { DHLInternational, HazmatCarrier } from './models/Carrier.js';
+import { Carrier, DHLInternational, HazmatCarrier, carrierConfigs } from './models/Carrier.js';
 import { PackageTrackerCLI } from '../cli.js';
 
 // Initialize the package tracking system
@@ -83,11 +83,10 @@ if (dhlPackage?.carrier instanceof DHLInternational) {
     console.log('\nDHL International Package:');
     console.log(`- Tracking Number: ${dhlPackage.trackingNumber}`);
     console.log(`- Status: ${dhlPackage.status}`);
-    console.log(`- International Zones: ${dhlPackage.carrier.getInternationalShippingZones()}`);
+    console.log(`- Delivery From: ${internationalEmail.match(/Origin Country: (\w+)/)?.[1] || 'Unknown'}`);
     console.log(`- Valid for International: ${dhlPackage.carrier.validateInternationalTracking(dhlPackage.trackingNumber)}`);
 }
 
-// Hazardous Materials (CHEMLOG)
 const hazmatEmail = `
     From: Laboratory_Supplies@chemlab.com
     Subject: Chemical shipment
@@ -107,6 +106,43 @@ if (hazmatPackage?.carrier instanceof HazmatCarrier) {
     console.log(`- Handling Instructions: ${hazmatPackage.carrier.getHandlingInstructions('flammable')}`);
 }
 
-// Cleanup
+// Test UPS package
+const upsEmail = `
+    From: Amazon.com
+    Subject: Your UPS package is on its way
+    Tracking Number: 1Z999AA1234567890
+    Carrier: UPS
+    Service: Next Day Air
+    Expected Delivery: ${new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+    Your order of "Gaming Console" has shipped.
+`;
+
+const upsPackage = trackingSystem.extractFromEmail(upsEmail, sessionId);
+if (upsPackage?.carrier.type === Carrier.TYPES.UPS) {
+    console.log('\nUPS Package:');
+    console.log(`- Tracking Number: ${upsPackage.trackingNumber}`);
+    console.log(`- Status: ${upsPackage.status}`);
+    console.log(`- Carrier: ${upsPackage.carrier.name}`);
+}
+
+// Test FedEx package
+const fedexEmail = `
+    From: BestBuy.com
+    Subject: Your FedEx package is on its way
+    Tracking Number: 123456789012
+    Carrier: FEDEX
+    Service: Priority
+    Expected Delivery: ${new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString().split('T')[0]}
+    Your order of "Laptop" has shipped.
+`;
+
+const fedexPackage = trackingSystem.extractFromEmail(fedexEmail, sessionId);
+if (fedexPackage?.carrier.type === Carrier.TYPES.FEDEX) {
+    console.log('\nFedEx Package:');
+    console.log(`- Tracking Number: ${fedexPackage.trackingNumber}`);
+    console.log(`- Status: ${fedexPackage.status}`);
+    console.log(`- Carrier: ${fedexPackage.carrier.name}`);
+}
+
 trackingSystem.logout(sessionId);
 console.log('\nUser logged out'); 

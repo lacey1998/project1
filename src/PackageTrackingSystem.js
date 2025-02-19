@@ -1,4 +1,4 @@
-import { DHLInternational, HazmatCarrier } from './models/Carrier.js';
+import { Carrier, DHLInternational, HazmatCarrier, carrierConfigs } from './models/Carrier.js';
 import Package from './models/Package.js';
 import EmailParser from './services/EmailParser.js';
 import UserManager from './services/UserManager.js';
@@ -26,8 +26,10 @@ class PackageTrackingSystem {
      */
     initializeCarriers() {
         return {
-            'DHL': new DHLInternational(),
-            'CHEMLOG': new HazmatCarrier()
+            [Carrier.TYPES.DHL]: new DHLInternational(),
+            [Carrier.TYPES.CHEMLOG]: new HazmatCarrier(),
+            [Carrier.TYPES.UPS]: new Carrier(carrierConfigs.UPS),
+            [Carrier.TYPES.FEDEX]: new Carrier(carrierConfigs.FEDEX)
         };
     }
 
