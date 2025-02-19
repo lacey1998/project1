@@ -1,4 +1,4 @@
-import Carrier from './models/Carrier.js';
+import { DHLInternational, ChemicalLogistics } from './models/Carrier.js';
 import Package from './models/Package.js';
 import EmailParser from './services/EmailParser.js';
 import UserManager from './services/UserManager.js';
@@ -14,21 +14,8 @@ class PackageTrackingSystem {
 
     initializeCarriers() {
         return {
-            'FEDEX': new Carrier({
-                name: 'FedEx',
-                trackingPattern: /(\b\d{12}\b|\b\d{15}\b)/,
-                trackingUrlTemplate: 'https://www.fedex.com/fedextrack/?trknbr={trackingNumber}'
-            }),
-            'UPS': new Carrier({
-                name: 'UPS',
-                trackingPattern: /\b1Z[A-Z0-9]{16}\b/,
-                trackingUrlTemplate: 'https://www.ups.com/track?tracknum={trackingNumber}'
-            }),
-            'DHL': new Carrier({
-                name: 'DHL',
-                trackingPattern: /\b\d{10}\b/,
-                trackingUrlTemplate: 'https://www.dhl.com/track?trackingNumber={trackingNumber}'
-            })
+            'DHL': new DHLInternational(),
+            'CHEMLOG': new ChemicalLogistics()
         };
     }
 
@@ -44,6 +31,24 @@ class PackageTrackingSystem {
         this.userManager.logout(sessionId);
     }
 
+    subscribe(callback) {
+        this.subscribers.push(callback);
+    }
+
+    notifySubscribers(event, data) {
+        this.subscribers.forEach(callback => callback(event, data));
+    }
+
+    checkDeliveryDate(pkg) {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+        const deliveryDate = new Date(pkg.estimatedDeliveryDate);
+        if (deliveryDate.toDateString() === tomorrow.toDateString()) {
+            this.notifySubscribers('DELIVERY_TOMORROW', pkg);
+        }
+    }
+
     extractFromEmail(emailContent, sessionId) {
         const user = this.userManager.getUser(sessionId);
         if (!user) {
@@ -55,6 +60,7 @@ class PackageTrackingSystem {
             const newPackage = new Package(packageData);
             user.addPackage(newPackage);
             this.notifySubscribers('NEW_PACKAGE', newPackage);
+            this.checkDeliveryDate(newPackage);
             return newPackage;
         }
         return null;
@@ -70,7 +76,49 @@ class PackageTrackingSystem {
         );
     }
 
-    // ... rest of the methods remain the same ...
+    filterByStatus(status, sessionId) {
+        const user = this.userManager.getUser(sessionId);
+        if (!user) {
+            throw new Error('User not logged in');
+        }
+        return user.getPackages().filter(pkg => pkg.status === status);
+    }
+
+    searchPackages(query, sessionId) {
+        const user = this.userManager.getUser(sessionId);
+        if (!user) {
+            throw new Error('User not logged in');
+        }
+        query = query.toLowerCase();
+        return user.getPackages().filter(pkg => 
+            pkg.trackingNumber.toLowerCase().includes(query) ||
+            pkg.sender.toString().toLowerCase().includes(query) ||
+            pkg.tags.some(tag => tag.toLowerCase().includes(query))
+        );
+    }
+
+    checkUpcomingDeliveries(sessionId) {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const packages = this.getPackagesSorted(sessionId);
+        
+        return packages.filter(pkg => {
+            const deliveryDate = new Date(pkg.estimatedDeliveryDate);
+            return deliveryDate.toDateString() === tomorrow.toDateString();
+        });
+    }
+
+    updatePackageStatus(trackingNumber, newStatus, sessionId) {
+        const user = this.userManager.getUser(sessionId);
+        if (!user) {
+            throw new Error('User not logged in');
+        }
+        const pkg = user.getPackages().find(p => p.trackingNumber === trackingNumber);
+        if (pkg) {
+            pkg.updateStatus(newStatus);
+            this.notifySubscribers('STATUS_UPDATE', { trackingNumber, status: newStatus });
+        }
+    }
 }
 
 export default PackageTrackingSystem; 
