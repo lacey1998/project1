@@ -1,5 +1,7 @@
 # 📦 Package Tracking System
 
+A system for tracking packages and delivery notifications across multiple carriers.
+
 ## Project Overview
 This **Package Tracking System** is designed to extract package details from emails automatically, sort them by delivery date, and notify users of upcoming deliveries. The system **prioritizes object-oriented programming (OOP) principles** and is implemented using **JavaScript**. 
 
