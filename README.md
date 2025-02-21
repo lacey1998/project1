@@ -64,6 +64,12 @@ Design Patterns – Factory, Observer, Singleton
 - Actual **email parsing implementation**.
 - User interface for better interaction.
 
-## 📜 License
-This project is licensed under the MIT License.
+## Youtube Video
+- https://youtu.be/qQeD8JyUKIY
+
+## UML Diagram
+- https://lucid.app/lucidchart/f09e9faa-2289-42c8-aac8-a565e59f32de/edit?invitationId=inv_32b86b0b-176c-4a36-99b2-6c56b5d748f3&page=0_0# 
+
+## License
+This project is licensed under the MIT License. See the LICENSE file for details.
 
