@@ -159,13 +159,22 @@ class PackageTrackingSystem {
         if (!user) {
             throw new Error('User not logged in');
         }
-        query = query.toLowerCase();
-        return user.getPackages().filter(pkg => 
-            pkg.trackingNumber.toLowerCase().includes(query) ||
-            pkg.sender.toString().toLowerCase().includes(query) ||
+    
+        query = query.toLowerCase(); // Keep query lowercase
+        const packages = user.getPackages();
+    
+        const results = user.getPackages().filter(pkg => 
+            pkg.trackingNumber.toLowerCase().includes(query) ||  // Convert tracking number to lowercase
+            pkg.sender.toString().toLowerCase().includes(query) ||         // Convert sender to lowercase
+            pkg.carrier.name.toString().toLowerCase().includes(query) ||   // Convert carrier name to lowercase
             pkg.tags.some(tag => tag.toLowerCase().includes(query))
         );
+    
+        //console.log("🔍 Debug: Search results", results.map(pkg => pkg.trackingNumber));
+    
+        return results;
     }
+    
 
     /**
      * Gets packages scheduled for delivery tomorrow.
