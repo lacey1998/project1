@@ -8,11 +8,13 @@ class Carrier {
      * @static
      * @readonly
      */
-    static TYPES = {
-        DHL: 'DHL',
-        UPS: 'UPS',
-        FEDEX: 'FEDEX',
-        CHEMLOG: 'CHEMLOG'
+    static get TYPES(){
+        return {
+            DHL: 'DHL',
+            UPS: 'UPS',
+            FEDEX: 'FEDEX',
+            CHEMLOG: 'CHEMLOG'
+        };
     };
 
     /**
@@ -136,7 +138,7 @@ const carrierConfigs = {
     UPS: {
         name: 'UPS',
         type: Carrier.TYPES.UPS,
-        trackingPattern: /\b1Z[A-Z0-9]{16}\b/,
+        trackingPattern: /\b1Z\d{8}\b/,
         trackingUrlTemplate: 'https://www.ups.com/track?tracknum={trackingNumber}'
     },
     /** @type {Object} FedEx carrier configuration */

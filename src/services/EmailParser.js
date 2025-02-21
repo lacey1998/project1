@@ -48,23 +48,33 @@ class EmailParser {
      * @private
      */
     findTrackingInfo(content) {
+        content = content.replace(/\s+/g, ' ').trim();  // Normalize spaces and line breaks
         const carrierMatch = content.match(/Carrier: (\w+)/);
         if (!carrierMatch) {
+            console.log("⚠️ Carrier not found in email content.");
             return null;
         }
-
+    
         const carrierName = carrierMatch[1].toUpperCase();
+        //console.log(`🔍 Debug: Extracted Carrier Name: ${carrierName}`);
+    
         const carrier = this.carriers[carrierName];
-        
+    
         if (!carrier) {
+            console.log(`⚠️ Carrier "${carrierName}" is not recognized. Available carriers:`, Object.keys(this.carriers));
             return null;
         }
-
+    
+        //console.log(`✅ Carrier "${carrierName}" found. Checking tracking pattern...`);
+        //console.log(`🔍 Debug: Carrier "${carrierName}" tracking pattern:`, carrier.trackingPattern);
         const match = content.match(carrier.trackingPattern);
         if (!match) {
+            console.log(`⚠️ No tracking number found for carrier "${carrierName}".`);
             return null;
         }
-
+    
+        //console.log(`✅ Tracking Number Found: ${match[1] || match[0]}`);
+    
         return {
             trackingNumber: match[1] || match[0],
             carrier: carrierName
@@ -87,9 +97,12 @@ class EmailParser {
     }
 
     extractInternationalInfo(content) {
+        const destinationMatch = content.match(/Destination Country: (\w+)/);
+        const originMatch = content.match(/Origin Country: (\w+)/);
+    
         return {
-            destination: content.match(/Destination Country: (\w+)/)?.[1] || 'US',
-            originCountry: content.match(/Origin Country: (\w+)/)?.[1] || 'US'
+            destination: destinationMatch ? destinationMatch[1] : 'US',
+            originCountry: originMatch ? originMatch[1] : 'US'
         };
     }
 }
