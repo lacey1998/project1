@@ -104,8 +104,13 @@ class PackageTrackingSystem {
         if (!user) {
             throw new Error('User not logged in');
         }
-
+    
+        console.log(`📩 Debug: Raw Email Content:\n${emailContent}`);
+    
         const packageData = this.emailParser.parse(emailContent);
+    
+        console.log(`📦 Debug: Extracted Package Data:\n`, packageData);
+    
         if (packageData) {
             const newPackage = new Package(packageData);
             user.addPackage(newPackage);
@@ -113,6 +118,8 @@ class PackageTrackingSystem {
             this.checkDeliveryDate(newPackage);
             return newPackage;
         }
+        
+        console.log("⚠️ No package data found in the email.");
         return null;
     }
 

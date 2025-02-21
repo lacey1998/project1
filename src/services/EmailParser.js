@@ -52,25 +52,28 @@ class EmailParser {
         if (!carrierMatch) {
             return null;
         }
-
+    
         const carrierName = carrierMatch[1].toUpperCase();
-        const carrier = this.carriers[carrierName];
-        
-        if (!carrier) {
+        console.log(`🔍 Debug: Detected carrier: ${carrierName}`); // ✅ Debugging step
+    
+        if (!this.carriers[carrierName]) {
+            console.log(`⚠️ No carrier found for: ${carrierName}`);
             return null;
         }
-
+    
+        const carrier = this.carriers[carrierName];
+    
         const match = content.match(carrier.trackingPattern);
         if (!match) {
+            console.log(`⚠️ No tracking number found for carrier: ${carrierName}`);
             return null;
         }
-
+    
         return {
             trackingNumber: match[1] || match[0],
             carrier: carrierName
         };
     }
-
     extractSender(content) {
         const match = content.match(/From: (.+)/);
         return match ? match[1].trim() : 'Unknown Sender';

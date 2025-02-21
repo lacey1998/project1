@@ -46,7 +46,6 @@ class User {
     }
 
     hashPassword(password) {
-        // This is a placeholder - in a real app, use proper password hashing
         return `hashed_${password}`;
     }
 

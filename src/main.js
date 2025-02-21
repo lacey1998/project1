@@ -1,6 +1,6 @@
 import PackageTrackingSystem from './PackageTrackingSystem.js';
 import { Carrier, DHLInternational, HazmatCarrier, carrierConfigs } from './models/Carrier.js';
-import { PackageTrackerCLI } from '../cli.js';
+import { PackageTrackerCLI } from './cli.js';
 
 // Initialize the package tracking system
 const trackingSystem = new PackageTrackingSystem();
