@@ -9,8 +9,16 @@ class UserManager {
      * Creates a new UserManager instance.
      */
     constructor() {
-        this.users = new Map(); // username -> User
-        this.sessions = new Map();
+        this.users = new Map();
+        // if (!globalThis.__users) {
+        //     globalThis.__users = new Map(); // Store users persistently during runtime
+        // }
+        // if (!globalThis.__sessions) {
+        //     globalThis.__sessions = new Map();
+        // }
+
+        // this.users = globalThis.__users;
+        // this.sessions = globalThis.__sessions;
     }
 
     /**
@@ -25,9 +33,17 @@ class UserManager {
         if (this.users.has(details.username)) {
             throw new Error('Username already exists');
         }
-
-        const user = new User({ username: details.username, email: details.email, password: details.password });
+    
+        const user = new User({
+            username: details.username,
+            email: details.email,
+            password: details.password,  // 🔹 Store plain text password
+        });
+    
         this.users.set(details.username, user);
+        console.log(`✅ User registered successfully: ${details.username}`);
+        console.log("🔍 Debug: Users after registration:", Array.from(this.users.keys())); 
+    
         return user;
     }
 
@@ -39,15 +55,21 @@ class UserManager {
      * @throws {Error} If login fails
      */
     login(username, password) {
+        console.log("🔍 Debug: All registered users:", Array.from(this.users.keys()));
+        console.log(`🔍 Checking login for: ${username}, ${password}`);
+    
         const user = this.users.get(username);
-        if (!user || !user.validatePassword(password)) {
+        
+        if (!user || user.password !== password) {  // 🔹 FIXED: Compare passwords correctly
             throw new Error('Invalid username or password');
         }
 
         const sessionId = this.generateSessionId();
         this.sessions.set(sessionId, user);
+        console.log(`✅ User logged in: ${username}, Session ID: ${sessionId}`);
         return sessionId;
     }
+    
 
     logout(sessionId) {
         this.sessions.delete(sessionId);
@@ -58,9 +80,8 @@ class UserManager {
     }
 
     generateSessionId() {
-        // In a real app, use a proper session ID generator
         return `session_${Date.now()}_${Math.random()}`;
     }
 }
 
-export default UserManager; 
+export default UserManager;
