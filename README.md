@@ -13,24 +13,57 @@ This **Package Tracking System** is designed to extract package details from ema
 - Supports **search and filtering** by tracking number, sender, or category.
 
 ## Project Structure
-This repository contains the **PDF documentation** for the project, including:
-- **Business Requirements**
-- **UML Diagrams**
-- **Class Structure & Attributes**
-- **Implementation Details**
+PROJECT1/ │── docs/ # Documentation (JSDoc) │── node_modules/ # Dependencies │── src/ │ ├── models/ # Data models │ │ ├── Address.js # Address representation │ │ ├── Carrier.js # Carrier abstraction │ │ ├── Package.js # Package details │ │ ├── ShipmentHistory.js # Package tracking history │ │ ├── StatusUpdate.js # Status update representation │ │ ├── Tag.js # Tags for categorization │ │ ├── User.js # User entity │ │ ├── UserPreferences.js # User preferences model │ ├── services/ # Business logic services │ │ ├── EmailParser.js # Parses email for tracking details │ │ ├── UserManager.js # Manages user authentication │ ├── main.js # Main CLI application │ ├── PackageTrackingSystem.js # Core package tracking logic │── CS5700 Project1.pdf # Business requirements, UML, mockups │── Design_principles.md # OOP, SOLID, and design pattern documentation │── jsdoc.json # JSDoc configuration │── LICENSE.txt # License information │── package.json # Project dependencies │── README.md # Project documentation
 
-## How to Use
-Since this project is **documented only**, the repository does not include a working implementation. Refer to the uploaded PDFs for:
-1. **Project Design & Architecture**
-2. **OOP Class Definitions**
-3. **System Behavior & Flow**
+
+## 📖 How to Use
+### **1️⃣ Installation**
+```sh
+# Clone the repository
+git clone https://github.com/lacey1998/project1.git
+cd project1
+
+# Install dependencies
+npm install
+
+### **2️⃣ Running the CLI**
+node src/main.js
+
+### **3️⃣ Available Options**
+Once you start the CLI, you will see the following options:
+=== 📦 Package Tracking System ===
+1. Add package from email
+2. Add hazmat package from email
+3. Add international package from email
+4. View all packages
+5. Search packages
+6. Filter by status
+7. Add tag to package
+8. Show notifications
+9. Exit
+==================================
+
+### **4️⃣ Email Simulations**
+The system provides three email simulations for testing:
+
+- Regular Package Email (UPS) → Option 1
+- Hazmat Package Email → Option 2
+- International Package Email (DHL) → Option 3
+These simulate receiving shipment notifications and extracting tracking details.Full email can be viewed in main.js. 
+
+## 🛠️ Technical Stack
+Node.js – JavaScript runtime
+JSDoc – Documentation generation
+# More explanation for below can be found in Design_principles.md 
+Object-Oriented Programming (OOP) – Encapsulation, Inheritance, Polymorphism
+SOLID Principles – Clean architecture design
+Design Patterns – Factory, Observer, Singleton
 
 ## Future Enhancements
 - Integration with **real-time tracking APIs** (FedEx, UPS, DHL).
 - Actual **email parsing implementation**.
 - User interface for better interaction.
 
-## Repository Notes
-- This repository **only contains documentation** (`.pdf` files).  
-- All implementation details are described within the uploaded files.
+## 📜 License
+This project is licensed under the MIT License.
 
