@@ -13,36 +13,51 @@ This **Package Tracking System** is designed to extract package details from ema
 - Supports **search and filtering** by tracking number, sender, or category.
 
 ## Project Structure
-- `/docs/`: This directory contains **JSDoc-generated documentation** for the project. After running `npm run doc`, JSDoc will generate an HTML documentation site here. Open `docs/index.html` in a browser to view the API documentation.
-- `CS5700 Project 1 Design a Social Network.pdf`: The project specification document outlining the requirements and objectives.
-- `DESIGN_PRINCIPLES.md`: A markdown file demonstrate the application of object oriented programming in my code, such as OOP pillars, SOLID Principles, and design patterns.
-- `/src/`
-- `cli.js`: The command-line interface script that allows users to interact with the package tracking system via terminal commands.
-- `package-tracker.js`: The core module responsible for parsing emails, extracting package information, and managing package statuses.
-- `user.js`: Module defining the `User` class, handling user-specific data and preferences.
-- models & services inlcudes all the classes in this project
-- Root Files
+PROJECT1/ │── docs/ # Documentation (JSDoc) │── node_modules/ # Dependencies │── src/ │ ├── models/ # Data models │ │ ├── Address.js # Address representation │ │ ├── Carrier.js # Carrier abstraction │ │ ├── Package.js # Package details │ │ ├── ShipmentHistory.js # Package tracking history │ │ ├── StatusUpdate.js # Status update representation │ │ ├── Tag.js # Tags for categorization │ │ ├── User.js # User entity │ │ ├── UserPreferences.js # User preferences model │ ├── services/ # Business logic services │ │ ├── EmailParser.js # Parses email for tracking details │ │ ├── UserManager.js # Manages user authentication │ ├── main.js # Main CLI application │ ├── PackageTrackingSystem.js # Core package tracking logic │── CS5700 Project1.pdf # Business requirements, UML, mockups │── Design_principles.md # OOP, SOLID, and design pattern documentation │── jsdoc.json # JSDoc configuration │── LICENSE.txt # License information │── package.json # Project dependencies │── README.md # Project documentation
 
 
-## How to Use
-1. Please clone the repository
-```bash
-git clone https://github.com/lacey1998/project1
+## 📖 How to Use
+### **1️⃣ Installation**
+```sh
+# Clone the repository
+git clone https://github.com/lacey1998/project1.git
 cd project1
-```
 
-2. Install Dependencies
-
-```bash
+# Install dependencies
 npm install
-```
 
-3. To run the basic example in main.js please run
+### **2️⃣ Running the CLI**
+node src/main.js
 
-```bash
-node main.js
-```
+### **3️⃣ Available Options**
+Once you start the CLI, you will see the following options:
+=== 📦 Package Tracking System ===
+1. Add package from email
+2. Add hazmat package from email
+3. Add international package from email
+4. View all packages
+5. Search packages
+6. Filter by status
+7. Add tag to package
+8. Show notifications
+9. Exit
+==================================
 
+### **4️⃣ Email Simulations**
+The system provides three email simulations for testing:
+
+- Regular Package Email (UPS) → Option 1
+- Hazmat Package Email → Option 2
+- International Package Email (DHL) → Option 3
+These simulate receiving shipment notifications and extracting tracking details.Full email can be viewed in main.js. 
+
+## 🛠️ Technical Stack
+Node.js – JavaScript runtime
+JSDoc – Documentation generation
+# More explanation for below can be found in Design_principles.md 
+Object-Oriented Programming (OOP) – Encapsulation, Inheritance, Polymorphism
+SOLID Principles – Clean architecture design
+Design Patterns – Factory, Observer, Singleton
 
 ## Future Enhancements
 - Integration with **real-time tracking APIs** (FedEx, UPS, DHL).
@@ -57,6 +72,4 @@ node main.js
 
 ## License
 This project is licensed under the MIT License. See the LICENSE file for details.
-
-
 
