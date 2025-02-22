@@ -91,8 +91,15 @@ These simulate receiving shipment notifications and extracting tracking details.
 - Actual **email parsing implementation**.
 - User interface for better interaction.
 
+## Youtube Video
+- https://youtu.be/NcwBXck2xJY
+
+## UML Diagram
+- https://lucid.app/lucidchart/f09e9faa-2289-42c8-aac8-a565e59f32de/edit?invitationId=inv_32b86b0b-176c-4a36-99b2-6c56b5d748f3&page=0_0# 
+
 ## 📜 License
 This project is licensed under the **MIT License**.
+
 
 ## 📌 Use of Generative AI in Development
 
@@ -187,4 +194,6 @@ class HazmatCarrier extends Carrier {
     }
 }
 ```
-These subclasses introduce unique attributes (`internationalZones`, `hazmatClasses`) and methods (`validateInternationalTracking()`, `getHandlingInstructions()`) while adhering to **inheritance and polymorphism** principles.
+### **How It Was Used**
+- It helps me understand the SOLID and design principles of OOP, I use some of ChatGPT's response plus my own finding to finish the Design_Principle.md
+- The suggestions for the child class helps me introduce inheritence to my projects, I use ChatGPT's suggestion. 
