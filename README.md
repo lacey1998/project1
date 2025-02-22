@@ -93,3 +93,98 @@ These simulate receiving shipment notifications and extracting tracking details.
 
 ## 📜 License
 This project is licensed under the **MIT License**.
+
+## 📌 Use of Generative AI in Development
+
+### **Purpose**
+Generative AI (ChatGPT) was consulted during development to enhance my understanding of software design principles, including the **SOLID principles** and **design patterns**, as well as for brainstorming child classes for the `Carrier` class.
+
+### **Prompts and Responses**
+
+#### **Prompt:**
+_"Explain the SOLID principles with examples in JavaScript."_
+
+✅ **Response:**
+ChatGPT provided explanations and examples for each SOLID principle, including **good and bad examples** to illustrate best practices.
+- **Single Responsibility Principle (SRP):** Suggested refactoring classes that handle multiple concerns into smaller, focused classes.
+- **Open/Closed Principle (OCP):** Recommended using abstraction to allow extensions without modifying existing code.
+- **Liskov Substitution Principle (LSP):** Highlighted the need for subclasses to behave as expected when used in place of their parent class.
+- **Interface Segregation Principle (ISP):** Suggested breaking large interfaces into smaller, specific ones.
+- **Dependency Inversion Principle (DIP):** Encouraged using dependency injection to decouple high-level modules from low-level details.
+
+---
+
+#### **Prompt:**
+_"Explain the Factory, Observer, and Singleton design patterns with examples."_
+
+✅ **Response:**
+ChatGPT provided practical implementations for these patterns:
+- **Factory Pattern:** Used to create `Carrier` objects dynamically based on the shipping provider.
+- **Observer Pattern:** Applied in the `NotificationSystem` to notify users of package status updates.
+- **Singleton Pattern:** Ensured only one instance of `UserManager` exists.
+
+🚫 **Bad Example for Factory Pattern:**
+```js
+function createCarrier(type) {
+    let carrier;
+    if (type === "DHL") carrier = new DHL();
+    else if (type === "FedEx") carrier = new FedEx();
+    else throw new Error("Unknown carrier type");
+    return carrier;
+}
+```
+This approach lacks scalability as new carrier types require modifying this function, violating the Open/Closed Principle.
+
+✅ **Good Example for Factory Pattern:**
+```js
+class CarrierFactory {
+    static createCarrier(type) {
+        switch (type) {
+            case "DHL": return new DHL();
+            case "FedEx": return new FedEx();
+            default: throw new Error("Unknown carrier type");
+        }
+    }
+}
+```
+This implementation allows new carrier types to be added without modifying existing code.
+
+---
+
+#### **Prompt:**
+_"What is a good child class for the Carrier class that has unique attributes and methods?"_
+
+✅ **Response:**
+ChatGPT suggested child classes that already exist in the codebase:
+
+1. **DHLInternational** (for handling international shipments)
+```js
+class DHLInternational extends Carrier {
+    constructor() {
+        super("DHL", /DHL\d{10}/);
+        this.internationalZones = [];
+    }
+    validateInternationalTracking(trackingNumber) {
+        return trackingNumber.startsWith("DHL");
+    }
+}
+```
+
+2. **HazmatCarrier** (for hazardous material shipments)
+```js
+class HazmatCarrier extends Carrier {
+    constructor() {
+        super("CHEMLOG", /HZ\d{8}/);
+        this.hazmatClasses = ["flammable", "corrosive", "radioactive"];
+    }
+    getHandlingInstructions(materialType) {
+        const instructions = {
+            "flammable": "Keep away from heat sources",
+            "corrosive": "Handle with protective gear",
+            "radioactive": "Special containment required"
+        };
+        return instructions[materialType] || "No special instructions";
+    }
+}
+```
+These subclasses introduce unique attributes (`internationalZones`, `hazmatClasses`) and methods (`validateInternationalTracking()`, `getHandlingInstructions()`) while adhering to **inheritance and polymorphism** principles.
